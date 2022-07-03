@@ -1,26 +1,36 @@
-<template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
-</template>
+<script setup>
+import { ref, computed } from 'vue'
+import MainPageComp from "@/components/pages/MainPageComp.vue"
+import CatalogPageComp from "@/components/pages/CatalogPageComp.vue"
+import ShoppingCartPageComp from '@/components/pages/ShoppingCartPageComp.vue'
+import NotFound from "@/components/pages/NotFound.vue"
+import { useGlobalStatesStore } from "@/stores/globalStates.js"
+import QuickAddToCartComp from "@/components/QuickAddToCartComp.vue"
 
-<script>
-import HelloWorld from './components/HelloWorld.vue'
-
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
+const routes = {
+    '/': MainPageComp,
+    '/catalog': CatalogPageComp,
+    '/shopping_cart': ShoppingCartPageComp
 }
+
+const currentPath = ref(window.location.hash)
+
+window.addEventListener('hashchange', () => {
+    currentPath.value = window.location.hash
+})
+
+const currentView = computed(() => {
+    return routes[currentPath.value.slice(1) || '/'] || NotFound
+})
+
+const globalStates = useGlobalStatesStore()
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<template>
+    <QuickAddToCartComp v-if="globalStates.cartPopup" />
+    <a href="#/">Home</a>
+    <a href="#/catalog">Catalog</a>
+    <a href="#/shopping_cart">Shopping Cart</a>
+    <a href="#/non-existent-link">Broken link</a>
+    <component :is="currentView" />
+</template>
